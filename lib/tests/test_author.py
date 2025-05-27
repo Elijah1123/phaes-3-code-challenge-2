@@ -11,7 +11,7 @@ def reset_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Seed sample data
+  
     cursor.execute("INSERT INTO authors (name) VALUES ('Jane Doe')")
     cursor.execute("INSERT INTO authors (name) VALUES ('John Smith')")
 

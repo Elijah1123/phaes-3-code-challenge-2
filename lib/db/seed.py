@@ -2,7 +2,7 @@ from lib.models.author import Author
 from lib.models.magazine import Magazine
 from lib.models.article import Article
 
-# Seeding authors
+
 authors = [
     Author(name="Elijah Mzaleno"),
     Author(name="Jane Doe"),
@@ -11,7 +11,7 @@ authors = [
 for author in authors:
     author.save()
 
-# Seeding magazines
+
 magazines = [
     Magazine(name="Global Science", category="Science"),
     Magazine(name="Modern Tech", category="Technology"),
@@ -20,7 +20,7 @@ magazines = [
 for magazine in magazines:
     magazine.save()
 
-# Seeding articles
+
 articles = [
     Article(title="Quantum Realms", author_id=authors[0].id, magazine_id=magazines[0].id),
     Article(title="AI Revolution", author_id=authors[1].id, magazine_id=magazines[1].id),
