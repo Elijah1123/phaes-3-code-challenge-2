@@ -1,7 +1,5 @@
 import pytest
 from lib.models.author import Author
-from lib.models.magazine import Magazine
-from lib.models.article import Article
 from lib.db.connection import get_connection
 from scripts.setup_db import setup_db
 
@@ -11,7 +9,11 @@ def reset_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-  
+    cursor.execute("DELETE FROM articles")
+    cursor.execute("DELETE FROM magazines")
+    cursor.execute("DELETE FROM authors")
+    conn.commit()
+
     cursor.execute("INSERT INTO authors (name) VALUES ('Jane Doe')")
     cursor.execute("INSERT INTO authors (name) VALUES ('John Smith')")
 
@@ -24,9 +26,10 @@ def reset_db():
 
     conn.commit()
     yield
-    conn.execute("DELETE FROM articles")
-    conn.execute("DELETE FROM magazines")
-    conn.execute("DELETE FROM authors")
+
+    cursor.execute("DELETE FROM articles")
+    cursor.execute("DELETE FROM magazines")
+    cursor.execute("DELETE FROM authors")
     conn.commit()
 
 def test_author_creation():

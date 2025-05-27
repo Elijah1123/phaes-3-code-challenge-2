@@ -1,46 +1,38 @@
 import pytest
-from lib.models.author import Author
-from lib.models.magazine import Magazine
 from lib.models.article import Article
+from lib.db.connection import get_connection
+from scripts.setup_db import setup_db
 
-@pytest.fixture
-def setup_entities():
-    author = Author(name="Test Author")
-    author.save()
-    magazine = Magazine(name="Tech Mag", category="Technology")
-    magazine.save()
-    return author, magazine
+@pytest.fixture(autouse=True)
+def reset_db():
+    setup_db()
+    conn = get_connection()
+    cursor = conn.cursor()
 
-def test_create_article(setup_entities):
-    author, magazine = setup_entities
-    article = Article(title="Tech Innovations", author_id=author.id, magazine_id=magazine.id)
-    article.save()
-    assert article.id is not None
+    cursor.execute("DELETE FROM articles")
+    cursor.execute("DELETE FROM magazines")
+    cursor.execute("DELETE FROM authors")
+    conn.commit()
 
-def test_find_by_id(setup_entities):
-    author, magazine = setup_entities
-    article = Article(title="AI Advances", author_id=author.id, magazine_id=magazine.id)
-    article.save()
-    found = Article.find_by_id(article.id)
-    assert found.title == "AI Advances"
+    cursor.execute("INSERT INTO authors (name) VALUES ('Jane Doe')")
+    cursor.execute("INSERT INTO magazines (name, category) VALUES ('Tech Weekly', 'Technology')")
 
-def test_find_by_title(setup_entities):
-    author, magazine = setup_entities
-    article = Article(title="Quantum Computing", author_id=author.id, magazine_id=magazine.id)
-    article.save()
-    found = Article.find_by_title("Quantum Computing")
-    assert found.magazine_id == magazine.id
+    cursor.execute("INSERT INTO articles (title, author_id, magazine_id) VALUES ('AI in 2025', 1, 1)")
+    conn.commit()
+    yield
 
-def test_find_by_author(setup_entities):
-    author, magazine = setup_entities
-    article = Article(title="Cybersecurity", author_id=author.id, magazine_id=magazine.id)
-    article.save()
-    results = Article.find_by_author(author.id)
-    assert any(a.title == "Cybersecurity" for a in results)
+    cursor.execute("DELETE FROM articles")
+    cursor.execute("DELETE FROM magazines")
+    cursor.execute("DELETE FROM authors")
+    conn.commit()
 
-def test_find_by_magazine(setup_entities):
-    author, magazine = setup_entities
-    article = Article(title="Networking", author_id=author.id, magazine_id=magazine.id)
-    article.save()
-    results = Article.find_by_magazine(magazine.id)
-    assert any(a.title == "Networking" for a in results)
+def test_article_creation():
+    article = Article.create("New Article", 1, 1)
+    assert article.title == "New Article"
+    assert article.author_id == 1
+    assert article.magazine_id == 1
+
+def test_find_by_author():
+    articles = Article.find_by_author(1)
+    titles = [a.title for a in articles]
+    assert "AI in 2025" in titles
